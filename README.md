@@ -4,7 +4,14 @@
 
 ## Демонстрация
 
-[![asciicast](https://asciinema.org/a/Oqf6lCesjvAEVcGY.png)](https://asciinema.org/a/Oqf6lCesjvAEVcGY)
+[![asciicast](https://asciinema.org/a/dFH311T6qaF32HrK.png)](https://asciinema.org/a/dFH311T6qaF32HrK)
+
+## Установка и запуск
+
+```bash
+uv sync
+uv run database
+```
 
 ## Управление таблицами
 
@@ -27,15 +34,7 @@
 
 >>>Введите команду: list_tables
 - users
-
->>>Введите команду: drop_table users
-Таблица "users" успешно удалена.
-
->>>Введите команду: drop_table products
-Ошибка: Таблица "products" не существует.
 ```
-
-Метаданные таблиц хранятся в файле `db_meta.json` в текущей директории.
 
 ## CRUD-операции
 
@@ -68,11 +67,19 @@
 >>>Введите команду: update users set age = 29 where name = "Sergei"
 Запись с ID=1 в таблице "users" успешно обновлена.
 
->>>Введите команду: delete from users where ID = 1
-Запись с ID=1 успешно удалена из таблицы "users".
-
 >>>Введите команду: info users
 Таблица: users
 Столбцы: ID:int, name:str, age:int, is_active:bool
-Количество записей: 0
+Количество записей: 1
+```
+
+## Декораторы и обработка ошибок
+
+- **Обработка ошибок.** Операции с базой обёрнуты декоратором `handle_db_errors`: ошибки (несуществующая таблица или столбец, неверный тип значения, отсутствующий файл) выводятся сообщением, программа продолжает работу.
+- **Подтверждение действий.** Перед `drop_table` и `delete` программа запрашивает подтверждение (декоратор `confirm_action`):
+
+```
+>>>Введите команду: drop_table users
+Вы уверены, что хотите выполнить "удаление таблицы"? [y/n]: n
+Операция отменена.
 ```

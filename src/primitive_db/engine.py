@@ -14,6 +14,7 @@ from primitive_db.core import (
     update,
     validate_clause,
 )
+from primitive_db.decorators import create_cacher
 from primitive_db.parser import parse_condition, parse_values
 from primitive_db.utils import (
     load_metadata,
@@ -23,6 +24,7 @@ from primitive_db.utils import (
 )
 
 META_FILE = "db_meta.json"
+select_cache = create_cacher()
 
 
 def print_help():
@@ -86,9 +88,9 @@ def handle_insert(metadata, user_input):
     values = parse_values(parts[3][len("values") :])
     if not table_exists(metadata, table_name):
         return
-    data = load_table_data(table_name)
-    data = insert(metadata, table_name, values, data)
-    save_table_data(table_name, data)
+    data = insert(metadata, table_name, values, load_table_data(table_name))
+    if data is not None:
+        save_table_data(table_name, data)
 
 
 def handle_select(metadata, user_input):
@@ -103,8 +105,11 @@ def handle_select(metadata, user_input):
     where = parse_condition(where_text) if sep else None
     if where and not validate_clause(metadata, table_name, where):
         return
-    records = select(load_table_data(table_name), where)
-    print_records(metadata, table_name, records)
+    data = load_table_data(table_name)
+    key = (table_name, repr(where), repr(data))
+    records = select_cache(key, lambda: select(data, where))
+    if records is not None:
+        print_records(metadata, table_name, records)
 
 
 def handle_update(metadata, user_input):
@@ -132,6 +137,8 @@ def handle_update(metadata, user_input):
         print("Записи не найдены.")
         return
     data = update(data, set_clause, where)
+    if data is None:
+        return
     save_table_data(table_name, data)
     for record_id in ids:
         print(f'Запись с ID={record_id} в таблице "{table_name}" успешно обновлена.')
@@ -156,6 +163,8 @@ def handle_delete(metadata, user_input):
         print("Записи не найдены.")
         return
     data = delete(data, where)
+    if data is None:
+        return
     save_table_data(table_name, data)
     for record_id in ids:
         print(f'Запись с ID={record_id} успешно удалена из таблицы "{table_name}".')
@@ -184,10 +193,12 @@ def run():
             match command:
                 case "create_table" if len(args) >= 3:
                     metadata = create_table(metadata, args[1], args[2:])
-                    save_metadata(META_FILE, metadata)
+                    if metadata is not None:
+                        save_metadata(META_FILE, metadata)
                 case "drop_table" if len(args) == 2:
                     metadata = drop_table(metadata, args[1])
-                    save_metadata(META_FILE, metadata)
+                    if metadata is not None:
+                        save_metadata(META_FILE, metadata)
                 case "insert":
                     handle_insert(metadata, user_input)
                 case "select":

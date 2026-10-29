@@ -1,7 +1,10 @@
+from primitive_db.decorators import confirm_action, handle_db_errors, log_time
+
 VALID_TYPES = {"int", "str", "bool"}
 TYPE_MAP = {"int": int, "str": str, "bool": bool}
 
 
+@handle_db_errors
 def create_table(metadata, table_name, columns):
     """Создаёт таблицу"""
     if not table_name.isidentifier():
@@ -30,6 +33,8 @@ def create_table(metadata, table_name, columns):
     return metadata
 
 
+@handle_db_errors
+@confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
     """Удаляет таблицу из метаданных"""
     if table_name not in metadata:
@@ -55,6 +60,7 @@ def _matches(record, where_clause):
     return all(record.get(col) == val for col, val in where_clause.items())
 
 
+@handle_db_errors
 def validate_clause(metadata, table_name, clause):
     """Проверяет, что столбцы есть в таблице и значения нужного типа"""
     columns = metadata[table_name]
@@ -65,6 +71,8 @@ def validate_clause(metadata, table_name, clause):
     return True
 
 
+@handle_db_errors
+@log_time
 def insert(metadata, table_name, values, table_data):
     """Добавляет запись. values — значения всех столбцов, кроме ID"""
     if table_name not in metadata:
@@ -94,6 +102,8 @@ def insert(metadata, table_name, values, table_data):
     return table_data
 
 
+@handle_db_errors
+@log_time
 def select(table_data, where_clause=None):
     """Возвращает все записи или только подходящие под условие"""
     if not where_clause:
@@ -101,6 +111,7 @@ def select(table_data, where_clause=None):
     return [r for r in table_data if _matches(r, where_clause)]
 
 
+@handle_db_errors
 def update(table_data, set_clause, where_clause):
     """Обновляет поля в записях, подходящих под условие"""
     for record in table_data:
@@ -109,11 +120,14 @@ def update(table_data, set_clause, where_clause):
     return table_data
 
 
+@handle_db_errors
+@confirm_action("удаление записи")
 def delete(table_data, where_clause):
     """Удаляет записи, подходящие под условие"""
     return [r for r in table_data if not _matches(r, where_clause)]
 
 
+@handle_db_errors
 def info(metadata, table_name, table_data):
     """Выводит структуру таблицы и количество записей"""
     if table_name not in metadata:
