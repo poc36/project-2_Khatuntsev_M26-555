@@ -4,7 +4,7 @@
 
 ## Демонстрация
 
-[![asciicast](https://asciinema.org/a/Oqf6lCesjvAEVcGY.svg)](https://asciinema.org/a/Oqf6lCesjvAEVcGY)
+[![asciicast](https://asciinema.org/a/Oqf6lCesjvAEVcGY.png)](https://asciinema.org/a/Oqf6lCesjvAEVcGY)
 
 ## Управление таблицами
 
