@@ -1,10 +1,11 @@
 import json
 import os
 
-DATA_DIR = "data"
+from primitive_db.constants import DATA_DIR
+
 
 def load_metadata(filepath):
-    """Загружает данные из JSON-файла. 
+    """Загружает данные из JSON-файла.
     Если файл не найден, возвращает пустой словарь {}"""
     try:
         with open(filepath, encoding="utf-8") as f:

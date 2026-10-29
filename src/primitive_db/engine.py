@@ -3,6 +3,7 @@ import shlex
 import prompt
 from prettytable import PrettyTable
 
+from primitive_db.constants import META_FILE
 from primitive_db.core import (
     create_table,
     delete,
@@ -23,7 +24,6 @@ from primitive_db.utils import (
     save_table_data,
 )
 
-META_FILE = "db_meta.json"
 select_cache = create_cacher()
 
 
